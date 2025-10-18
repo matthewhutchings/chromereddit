@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear password field for security
         loginPassword.value = '';
-        
+
         setTimeout(updateAuthStatus, 2000); // Update buttons after login attempt
     });
 
