@@ -44,7 +44,7 @@ function findSearchInput() {
     return null;
 }
 
-// Function to perform search
+// Function to perform search with human-like typing
 function performSearch(query) {
     console.log('Attempting to search for:', query);
 
@@ -62,61 +62,98 @@ function performSearch(query) {
     // Clear existing value
     searchInput.value = '';
 
-    // Simulate realistic typing by setting value and triggering events
-    searchInput.value = query;
-
-    // Create and dispatch comprehensive events to mimic real user interaction
-    const events = [
-        new Event('focus', { bubbles: true }),
-        new Event('input', { bubbles: true, cancelable: true }),
-        new Event('change', { bubbles: true, cancelable: true }),
-        new KeyboardEvent('keydown', {
-            key: 'Enter',
-            code: 'Enter',
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true
-        }),
-        new KeyboardEvent('keypress', {
-            key: 'Enter',
-            code: 'Enter',
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true
-        }),
-        new KeyboardEvent('keyup', {
-            key: 'Enter',
-            code: 'Enter',
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true
-        })
-    ];
-
-    // Dispatch input events first
-    searchInput.dispatchEvent(events[0]); // focus
-    searchInput.dispatchEvent(events[1]); // input
-    searchInput.dispatchEvent(events[2]); // change
-
-    // Wait a moment then press Enter
-    setTimeout(() => {
-        console.log('Pressing Enter on search input...');
-        searchInput.dispatchEvent(events[3]); // keydown
-        searchInput.dispatchEvent(events[4]); // keypress
-        searchInput.dispatchEvent(events[5]); // keyup
-
-        // Also try form submission if the input is in a form
-        const form = searchInput.closest('form');
-        if (form) {
-            console.log('Found form, submitting...');
-            form.submit();
-        }
-    }, 200);
+    // Start typing character by character
+    typeCharacterByCharacter(searchInput, query);
 
     return true;
+}
+
+// Function to type characters one by one with human-like delays
+async function typeCharacterByCharacter(inputElement, text) {
+    console.log('Starting to type:', text);
+    
+    // Clear any existing value
+    inputElement.value = '';
+    
+    // Focus the input
+    inputElement.focus();
+    inputElement.dispatchEvent(new Event('focus', { bubbles: true }));
+    
+    // Type each character with a delay
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        
+        // Add the character to the input
+        inputElement.value += char;
+        
+        // Trigger input events for each character
+        const inputEvent = new Event('input', { bubbles: true, cancelable: true });
+        inputElement.dispatchEvent(inputEvent);
+        
+        // Random delay between 50-150ms per character to simulate human typing
+        const delay = Math.random() * 100 + 50;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        console.log(`Typed character: "${char}" (${i + 1}/${text.length})`);
+    }
+    
+    // Trigger change event after all characters are typed
+    const changeEvent = new Event('change', { bubbles: true, cancelable: true });
+    inputElement.dispatchEvent(changeEvent);
+    
+    // Wait a moment after finishing typing before submitting
+    const finalDelay = Math.random() * 500 + 300; // 300-800ms delay
+    console.log(`Waiting ${Math.round(finalDelay)}ms before submitting...`);
+    
+    setTimeout(() => {
+        console.log('Submitting search...');
+        submitSearch(inputElement);
+    }, finalDelay);
+}
+
+// Function to submit the search
+function submitSearch(inputElement) {
+    // Create and dispatch Enter key events
+    const keydownEvent = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+    });
+    
+    const keypressEvent = new KeyboardEvent('keypress', {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+    });
+    
+    const keyupEvent = new KeyboardEvent('keyup', {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+    });
+
+    // Dispatch keyboard events
+    inputElement.dispatchEvent(keydownEvent);
+    inputElement.dispatchEvent(keypressEvent);
+    inputElement.dispatchEvent(keyupEvent);
+
+    // Also try form submission if the input is in a form
+    const form = inputElement.closest('form');
+    if (form) {
+        console.log('Found form, submitting...');
+        form.submit();
+    }
+    
+    console.log('Search submitted successfully');
 }
 
 // Smooth scrolling functions
