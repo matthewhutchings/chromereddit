@@ -17,7 +17,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   // Only act when the page has finished loading
   if (changeInfo.status === 'complete' && tab.url && tab.url.includes('reddit.com')) {
     console.log('Reddit tab loaded, initializing API polling:', tab.url);
-    
+
     // Small delay to ensure content script is fully loaded
     setTimeout(() => {
       chrome.tabs.sendMessage(tabId, {

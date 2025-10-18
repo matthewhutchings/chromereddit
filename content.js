@@ -1171,15 +1171,15 @@ async function pollApiCommands() {
     if (!isApiPollingActive) {
         return; // Don't poll if polling was stopped
     }
-    
+
     try {
         const response = await fetch(`${API_SERVER_URL}/api/commands/poll`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.success && data.commands.length > 0) {
             console.log(`Reddit Helper: Received ${data.commands.length} API commands:`, data.commands);            // Process each command
             for (const command of data.commands) {
@@ -1330,20 +1330,20 @@ function startApiPolling() {
         console.log('Reddit Helper: API polling already active');
         return true;
     }
-    
+
     console.log('Reddit Helper: Starting API polling...');
     isApiPollingActive = true;
-    
+
     // Poll every 2 seconds
     apiPollingInterval = setInterval(pollApiCommands, 2000);
-    
+
     // Test connection immediately and start polling
     pollApiCommands().then(() => {
         console.log('Reddit Helper: API polling started successfully');
     }).catch((error) => {
         console.log('Reddit Helper: Initial API connection failed, but continuing to poll:', error.message);
     });
-    
+
     return true;
 }// Function to stop API polling
 function stopApiPolling() {
@@ -1391,7 +1391,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             message: isApiPollingActive ? 'API polling is active' : 'API polling is stopped'
         });
     }
-    
+
     // Return true to indicate we'll send a response asynchronously (even though we send it immediately)
     return true;
 });

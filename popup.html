@@ -107,12 +107,23 @@
         .stop-button:hover {
             background-color: #c82333 !important;
         }
+        
+        /* Initially hide conditional buttons - they'll be shown by JavaScript based on state */
+        #stopApiPollingButton {
+            display: none;
+        }
+        #logoutButton {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h2>Reddit Helper</h2>
         <p style="margin: 5px 0; font-size: 12px; color: #666;">Control Reddit from here</p>
+        <div style="font-size: 10px; color: #999; margin-top: 2px;">
+            v<span id="versionNumber">1.0.0</span>
+        </div>
     </div>
 
     <div class="action-section">

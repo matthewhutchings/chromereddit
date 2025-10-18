@@ -25,6 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const startApiPollingButton = document.getElementById('startApiPollingButton');
     const stopApiPollingButton = document.getElementById('stopApiPollingButton');
     const apiStatusText = document.getElementById('apiStatusText');
+    const versionNumber = document.getElementById('versionNumber');
+
+    // Load and display version number from manifest
+    function loadVersion() {
+        const manifest = chrome.runtime.getManifest();
+        if (manifest && manifest.version) {
+            versionNumber.textContent = manifest.version;
+        }
+    }
 
     // Function to show status messages
     function showStatus(message, isError = false) {
@@ -143,28 +152,15 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthButton.addEventListener('click', function() {
         sendToReddit('checkAuth');
         showStatus('Checking login status...');
+        setTimeout(updateAuthStatus, 1000); // Update buttons after check
     });
 
     // Logout functionality
     logoutButton.addEventListener('click', function() {
         sendToReddit('logout');
         showStatus('Logging out...');
-        // Clear auth status
-        updateAuthStatus(null);
+        setTimeout(updateAuthStatus, 1000); // Update buttons after logout
     });
-
-    // Function to update auth status display
-    function updateAuthStatus(username) {
-        if (username) {
-            authStatus.style.display = 'block';
-            loginStatusText.textContent = `Logged in as ${username}`;
-            loginStatusText.style.color = '#28a745'; // Green
-        } else {
-            authStatus.style.display = 'block';
-            loginStatusText.textContent = 'Not logged in';
-            loginStatusText.style.color = '#dc3545'; // Red
-        }
-    }
 
     // Login functionality
     loginButton.addEventListener('click', function() {
@@ -181,6 +177,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear password field for security
         loginPassword.value = '';
+        
+        setTimeout(updateAuthStatus, 2000); // Update buttons after login attempt
     });
 
     // Test connection button
@@ -249,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show checking status immediately
         apiStatusText.textContent = '🔄 Checking API...';
         apiStatusText.style.color = '#6c757d';
-        
+
         setTimeout(() => {
             sendToReddit('getApiStatus', {}, (response) => {
                 if (response && response.success) {
@@ -265,14 +263,64 @@ document.addEventListener('DOMContentLoaded', function() {
                         sendToReddit('startApiPolling');
                         setTimeout(updateApiStatus, 1000); // Check again after attempting restart
                     }
+                    updateApiButtons(isPolling);
                 } else {
                     apiStatusText.textContent = '⚠️ API Status Unknown';
                     apiStatusText.style.color = '#ffc107';
                     showStatus('Could not connect to content script', true);
+                    updateApiButtons(false);
                 }
             });
         }, 500);
-    }    function stopAutoBrowse() {
+    }
+
+    // Function to update API button visibility based on polling status
+    function updateApiButtons(isPolling) {
+        if (isPolling) {
+            startApiPollingButton.style.display = 'none';
+            stopApiPollingButton.style.display = 'block';
+        } else {
+            startApiPollingButton.style.display = 'block';
+            stopApiPollingButton.style.display = 'none';
+        }
+    }
+
+    // Function to update auth status and button visibility
+    function updateAuthStatus() {
+        sendToReddit('checkAuthentication', {}, (response) => {
+            if (response && response.success && response.username) {
+                // User is logged in
+                authStatus.style.display = 'block';
+                loginStatusText.textContent = `Logged in as: ${response.username}`;
+                updateAuthButtons(true, response.username);
+            } else {
+                // User is not logged in
+                authStatus.style.display = 'none';
+                updateAuthButtons(false);
+            }
+        });
+    }
+
+    // Function to update auth button visibility based on login status
+    function updateAuthButtons(isLoggedIn, username = null) {
+        if (isLoggedIn) {
+            // Show logout button, hide login form
+            loginEmail.style.display = 'none';
+            loginPassword.style.display = 'none';
+            loginButton.style.display = 'none';
+            logoutButton.style.display = 'block';
+            checkAuthButton.textContent = `Refresh Status (${username})`;
+        } else {
+            // Show login form, hide logout button
+            loginEmail.style.display = 'block';
+            loginPassword.style.display = 'block';
+            loginButton.style.display = 'block';
+            logoutButton.style.display = 'none';
+            checkAuthButton.textContent = 'Check Login Status';
+        }
+    }
+
+    function stopAutoBrowse() {
         // Update UI
         autoBrowseButton.style.display = 'block';
         stopBrowseButton.style.display = 'none';
@@ -286,6 +334,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Load version number
+    loadVersion();
+
     // Check if we're on Reddit and show appropriate status
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         if (tabs[0]) {
@@ -293,10 +344,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const isOnReddit = tabs[0].url && tabs[0].url.includes('reddit.com');
             if (!isOnReddit) {
                 showStatus('Navigate to Reddit to use all features', false);
+                // Still update button states even when not on Reddit
+                updateApiStatus();
+                updateAuthStatus();
             } else {
                 showStatus('Ready to interact with Reddit!');
-                // Update API status when on Reddit
+                // Update all statuses when on Reddit
                 updateApiStatus();
+                updateAuthStatus();
             }
         }
     });

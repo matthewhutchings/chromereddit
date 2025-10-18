@@ -66,7 +66,7 @@ async function runTests() {
             command: 'search',
             data: { query: 'test search from API' }
         };
-        
+
         const searchResult = await makeRequest('POST', '/api/command', searchCommand);
         if (searchResult.success) {
             console.log('✅ Search command queued successfully');
@@ -100,7 +100,7 @@ async function runTests() {
         const authCommand = {
             command: 'checkAuth'
         };
-        
+
         const authResult = await makeRequest('POST', '/api/command', authCommand);
         if (authResult.success) {
             console.log('✅ Auth check command queued successfully');
@@ -111,7 +111,7 @@ async function runTests() {
 
         console.log('\n6. Final status check in 3 seconds...');
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
+
         const finalHistory = await makeRequest('GET', '/api/commands/history');
         if (finalHistory.success) {
             const newCommands = finalHistory.history.length - (history.history ? history.history.length : 0);
