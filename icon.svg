@@ -1,0 +1,28 @@
+<!-- Simple Reddit Helper Icon (SVG) -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#FF4500" stroke="#333" stroke-width="4"/>
+
+  <!-- Reddit alien head -->
+  <ellipse cx="64" cy="55" rx="25" ry="20" fill="white"/>
+
+  <!-- Eyes -->
+  <circle cx="56" cy="50" r="4" fill="#333"/>
+  <circle cx="72" cy="50" r="4" fill="#333"/>
+
+  <!-- Mouth -->
+  <path d="M 56 62 Q 64 68 72 62" stroke="#333" stroke-width="2" fill="none"/>
+
+  <!-- Antennae -->
+  <circle cx="50" cy="35" r="3" fill="#FF4500"/>
+  <circle cx="78" cy="35" r="3" fill="#FF4500"/>
+  <line x1="54" y1="45" x2="50" y2="38" stroke="#333" stroke-width="2"/>
+  <line x1="74" y1="45" x2="78" y2="38" stroke="#333" stroke-width="2"/>
+
+  <!-- Search symbol -->
+  <circle cx="64" cy="85" r="12" fill="none" stroke="white" stroke-width="3"/>
+  <line x1="73" y1="94" x2="80" y2="101" stroke="white" stroke-width="3"/>
+
+  <!-- Helper text -->
+  <text x="64" y="115" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">HELPER</text>
+</svg>

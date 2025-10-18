@@ -1,0 +1,761 @@
+{
+  "info": {
+    "name": "Reddit Helper API",
+    "description": "Collection for testing the Reddit Helper Chrome Extension API Server",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "commandId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Server Information",
+      "item": [
+        {
+          "name": "Get Server Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Commands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/commands",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "commands"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Command History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/commands/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "commands", "history"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Poll Commands (Extension Endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/commands/poll",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "commands", "poll"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reddit Commands",
+      "item": [
+        {
+          "name": "Search Reddit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Extract command ID from response",
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"search\",\n    \"data\": {\n        \"query\": \"programming\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search JavaScript",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"search\",\n    \"data\": {\n        \"query\": \"javascript tutorials\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Go to Reddit Home",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"goHome\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"refresh\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login to Reddit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"login\",\n    \"data\": {\n        \"email\": \"your_username\",\n        \"password\": \"your_password\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Authentication Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"checkAuth\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout from Reddit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"logout\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auto Browsing",
+      "item": [
+        {
+          "name": "Start Auto Browse (5 minutes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"startAutoBrowse\",\n    \"data\": {\n        \"duration\": 5\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start Auto Browse (Short - 1 minute)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"startAutoBrowse\",\n    \"data\": {\n        \"duration\": 1\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Browse Home Feed (10 minutes)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"browseHomeFeed\",\n    \"data\": {\n        \"duration\": 10\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Stop Auto Browse",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"stopAutoBrowse\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Scroll Controls",
+      "item": [
+        {
+          "name": "Scroll Down",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"scrollDown\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Scroll Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"scrollUp\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Scroll to Top",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.json().commandId) {",
+                  "    pm.collectionVariables.set('commandId', pm.response.json().commandId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"scrollToTop\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Command Result Testing",
+      "item": [
+        {
+          "name": "Report Command Result",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"success\": true,\n    \"message\": \"Command executed successfully\",\n    \"data\": {\n        \"executionTime\": \"2.5s\",\n        \"details\": \"Test result data\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/commands/{{commandId}}/result",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "commands", "{{commandId}}", "result"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Batch Commands",
+      "item": [
+        {
+          "name": "Quick Browse Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// This is a sequence example - you'd run these manually or use Postman's Collection Runner"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"goHome\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search and Browse Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"search\",\n    \"data\": {\n        \"query\": \"machine learning\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Testing",
+      "item": [
+        {
+          "name": "Invalid Command",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"invalidCommand\",\n    \"data\": {\n        \"test\": \"data\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Command",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"query\": \"test\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Without Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"command\": \"search\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/command",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "command"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// You can add collection-level pre-request scripts here",
+          "console.log('Running Reddit Helper API request...');"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test scripts",
+          "pm.test('Response should be JSON', function () {",
+          "    pm.response.to.be.json;",
+          "});",
+          "",
+          "pm.test('Response should have success property', function () {",
+          "    pm.expect(pm.response.json()).to.have.property('success');",
+          "});"
+        ]
+      }
+    }
+  ]
+}

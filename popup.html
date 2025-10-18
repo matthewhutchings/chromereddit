@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 300px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .header h2 {
+            margin: 0;
+            color: #ff4500;
+        }
+        .action-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .action-section h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        button:hover {
+            background-color: #e03d00;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .scroll-controls {
+            display: flex;
+            gap: 5px;
+        }
+        .scroll-controls button {
+            flex: 1;
+        }
+        .browse-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        .browse-controls input[type="number"] {
+            width: 50px;
+            padding: 4px;
+            margin: 0;
+        }
+        #browseStatus {
+            font-size: 11px;
+            margin-top: 5px;
+            color: #666;
+            text-align: center;
+            font-weight: 500;
+        }
+        .stop-button {
+            background-color: #dc3545 !important;
+        }
+        .stop-button:hover {
+            background-color: #c82333 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Reddit Helper</h2>
+        <p style="margin: 5px 0; font-size: 12px; color: #666;">Control Reddit from here</p>
+    </div>
+
+    <div class="action-section">
+        <h3>🔍 Search Reddit</h3>
+        <input type="text" id="searchInput" placeholder="Enter search term...">
+        <button id="searchButton">Search on Reddit</button>
+    </div>
+
+    <div class="action-section">
+        <h3>🤖 Auto Browse</h3>
+        <div class="browse-controls">
+            <label for="browseTime">Browse for:</label>
+            <input type="number" id="browseTime" min="1" max="60" value="5">
+            <span>minutes</span>
+        </div>
+        <button id="autoBrowseButton">Start Auto Browse</button>
+        <button id="stopBrowseButton" class="stop-button" style="display: none;">Stop Browse</button>
+        <button id="browseHomeFeedButton" style="background-color: #007bff; margin-top: 5px;">Browse Home Feed</button>
+        <div id="browseStatus" style="font-size: 11px; margin-top: 5px; color: #666;"></div>
+    </div>
+
+    <div class="action-section">
+        <h3>📜 Scroll Controls</h3>
+        <div class="scroll-controls">
+            <button id="scrollDownButton">Scroll Down</button>
+            <button id="scrollUpButton">Scroll Up</button>
+        </div>
+        <button id="scrollToTopButton">Go to Top</button>
+    </div>
+
+    <div class="action-section">
+        <h3>🔑 Login to Reddit</h3>
+        <div id="authStatus" style="margin-bottom: 10px; font-size: 12px; text-align: center; display: none;">
+            <span id="loginStatusText" style="color: #28a745; font-weight: 500;"></span>
+        </div>
+        <input type="email" id="loginEmail" placeholder="Email or username" style="margin-bottom: 8px;">
+        <input type="password" id="loginPassword" placeholder="Password" style="margin-bottom: 10px;">
+        <button id="loginButton">Login to Reddit</button>
+        <button id="checkAuthButton" style="background-color: #6c757d; margin-top: 5px;">Check Login Status</button>
+        <button id="logoutButton" style="background-color: #dc3545; margin-top: 5px;">Log Out</button>
+    </div>
+
+    <div class="action-section">
+        <h3>🏠 Navigation</h3>
+        <button id="goHomeButton">Go to Reddit Home</button>
+        <button id="refreshButton">Refresh Page</button>
+        <button id="testButton">Test Connection</button>
+    </div>
+
+    <div class="action-section">
+        <h3>🌐 API Server</h3>
+        <div id="apiStatus" style="margin-bottom: 10px; font-size: 12px; text-align: center;">
+            <span id="apiStatusText" style="color: #666;">Checking API status...</span>
+        </div>
+        <button id="startApiPollingButton" style="background-color: #28a745;">Start API Polling</button>
+        <button id="stopApiPollingButton" style="background-color: #dc3545; margin-top: 5px;">Stop API Polling</button>
+        <div style="margin-top: 10px; font-size: 11px; color: #666; text-align: center;">
+            <p style="margin: 2px 0;">Server: localhost:3000</p>
+            <p style="margin: 2px 0;">Polling: Commands via API</p>
+        </div>
+    </div>
+
+    <div id="status" class="status" style="display: none;"></div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

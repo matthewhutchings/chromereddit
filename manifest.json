@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit Helper",
+  "version": "1.0.0",
+  "description": "A Chrome extension to help with Reddit interactions like searching and scrolling",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://www.reddit.com/*",
+    "*://reddit.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Reddit Helper"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.reddit.com/*", "*://reddit.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
