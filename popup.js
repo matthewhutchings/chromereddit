@@ -246,23 +246,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to update API status
     function updateApiStatus() {
+        // Show checking status immediately
+        apiStatusText.textContent = '🔄 Checking API...';
+        apiStatusText.style.color = '#6c757d';
+        
         setTimeout(() => {
             sendToReddit('getApiStatus', {}, (response) => {
                 if (response && response.success) {
                     const isPolling = response.isPolling;
-                    apiStatusText.textContent = isPolling ?
-                        '🟢 API Polling Active' :
-                        '🔴 API Polling Stopped';
-                    apiStatusText.style.color = isPolling ? '#28a745' : '#dc3545';
+                    if (isPolling) {
+                        apiStatusText.textContent = '🟢 API Ready for Commands';
+                        apiStatusText.style.color = '#28a745';
+                        showStatus('API polling active - ready for remote commands!', false);
+                    } else {
+                        apiStatusText.textContent = '🔴 API Polling Stopped';
+                        apiStatusText.style.color = '#dc3545';
+                        // Try to restart it automatically
+                        sendToReddit('startApiPolling');
+                        setTimeout(updateApiStatus, 1000); // Check again after attempting restart
+                    }
                 } else {
                     apiStatusText.textContent = '⚠️ API Status Unknown';
                     apiStatusText.style.color = '#ffc107';
+                    showStatus('Could not connect to content script', true);
                 }
             });
         }, 500);
-    }
-
-    function stopAutoBrowse() {
+    }    function stopAutoBrowse() {
         // Update UI
         autoBrowseButton.style.display = 'block';
         stopBrowseButton.style.display = 'none';

@@ -1168,25 +1168,28 @@ let isApiPollingActive = false;
 
 // Function to poll the API server for new commands
 async function pollApiCommands() {
+    if (!isApiPollingActive) {
+        return; // Don't poll if polling was stopped
+    }
+    
     try {
         const response = await fetch(`${API_SERVER_URL}/api/commands/poll`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+        
         const data = await response.json();
-
+        
         if (data.success && data.commands.length > 0) {
-            console.log(`Received ${data.commands.length} API commands:`, data.commands);
-
-            // Process each command
+            console.log(`Reddit Helper: Received ${data.commands.length} API commands:`, data.commands);            // Process each command
             for (const command of data.commands) {
                 await processApiCommand(command);
             }
         }
     } catch (error) {
-        console.error('Error polling API commands:', error);
+        console.error('Reddit Helper: Error polling API commands:', error);
         // Don't stop polling on errors, just log them
+        // This allows the extension to keep trying even if the server is temporarily down
     }
 }
 
@@ -1324,21 +1327,25 @@ async function reportCommandResult(commandId, result) {
 // Function to start API polling
 function startApiPolling() {
     if (isApiPollingActive) {
-        console.log('API polling already active');
-        return;
+        console.log('Reddit Helper: API polling already active');
+        return true;
     }
-
-    console.log('Starting API polling...');
+    
+    console.log('Reddit Helper: Starting API polling...');
     isApiPollingActive = true;
-
+    
     // Poll every 2 seconds
     apiPollingInterval = setInterval(pollApiCommands, 2000);
-
-    // Also poll immediately
-    pollApiCommands();
-}
-
-// Function to stop API polling
+    
+    // Test connection immediately and start polling
+    pollApiCommands().then(() => {
+        console.log('Reddit Helper: API polling started successfully');
+    }).catch((error) => {
+        console.log('Reddit Helper: Initial API connection failed, but continuing to poll:', error.message);
+    });
+    
+    return true;
+}// Function to stop API polling
 function stopApiPolling() {
     if (!isApiPollingActive) {
         console.log('API polling not active');
@@ -1355,21 +1362,36 @@ function stopApiPolling() {
 }
 
 // Auto-start API polling when the script loads
+console.log('Reddit Helper: Auto-starting API polling...');
 startApiPolling();
 
-// Listen for messages from popup to control API polling
+// Also start API polling after a short delay to ensure everything is ready
+setTimeout(() => {
+    if (!isApiPollingActive) {
+        console.log('Reddit Helper: Retry starting API polling after delay...');
+        startApiPolling();
+    }
+}, 3000);
+
+// Listen for messages from popup and background script to control API polling
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'startApiPolling') {
+        console.log('Reddit Helper: Received startApiPolling message');
         startApiPolling();
-        sendResponse({ success: true, message: 'API polling started' });
+        sendResponse({ success: true, message: 'API polling started', isPolling: isApiPollingActive });
     } else if (request.action === 'stopApiPolling') {
+        console.log('Reddit Helper: Received stopApiPolling message');
         stopApiPolling();
-        sendResponse({ success: true, message: 'API polling stopped' });
+        sendResponse({ success: true, message: 'API polling stopped', isPolling: isApiPollingActive });
     } else if (request.action === 'getApiStatus') {
         sendResponse({
             success: true,
             isPolling: isApiPollingActive,
-            serverUrl: API_SERVER_URL
+            serverUrl: API_SERVER_URL,
+            message: isApiPollingActive ? 'API polling is active' : 'API polling is stopped'
         });
     }
+    
+    // Return true to indicate we'll send a response asynchronously (even though we send it immediately)
+    return true;
 });
