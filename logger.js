@@ -6,7 +6,7 @@ class Logger {
         this.logDir = path.join(__dirname, 'logs');
         this.logFile = path.join(this.logDir, 'api.log');
         this.errorLogFile = path.join(this.logDir, 'error.log');
-        
+
         // Ensure logs directory exists
         this.ensureLogDir();
     }
@@ -43,7 +43,7 @@ class Logger {
             stack: error.stack,
             ...data
         } : data;
-        
+
         const logMessage = this.formatMessage('error', message, errorData);
         this.writeToFile(this.logFile, logMessage);
         this.writeToFile(this.errorLogFile, logMessage);
@@ -76,7 +76,7 @@ class Logger {
     // Rotate log files when they get too large (10MB)
     rotateLogs() {
         const maxSize = 10 * 1024 * 1024; // 10MB
-        
+
         [this.logFile, this.errorLogFile].forEach(file => {
             if (fs.existsSync(file)) {
                 const stats = fs.statSync(file);

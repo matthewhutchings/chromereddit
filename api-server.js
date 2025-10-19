@@ -12,14 +12,14 @@ app.use(express.urlencoded({ extended: true }));
 // Request logging middleware
 app.use((req, res, next) => {
     logger.request(req.method, req.url, req.body);
-    
+
     // Capture the original res.json method
     const originalJson = res.json;
     res.json = function(data) {
         logger.response(req.method, req.url, res.statusCode, data);
         return originalJson.call(this, data);
     };
-    
+
     next();
 });
 
@@ -80,8 +80,8 @@ app.get('/api/commands/poll', (req, res) => {
         const commands = [...commandQueue];
         commandQueue = [];
 
-        logger.info(`Polling returned ${commands.length} commands`, { 
-            commandIds: commands.map(c => c.id) 
+        logger.info(`Polling returned ${commands.length} commands`, {
+            commandIds: commands.map(c => c.id)
         });
 
         res.json({
@@ -112,7 +112,7 @@ app.post('/api/commands/:commandId/result', (req, res) => {
         };
 
         commandHistory.push(result);
-        
+
         if (success) {
             logger.success(`Command ${commandId} completed successfully`, { message, data });
         } else {
@@ -124,9 +124,9 @@ app.post('/api/commands/:commandId/result', (req, res) => {
             message: 'Result recorded'
         });
     } catch (error) {
-        logger.error('Error recording command result', error, { 
-            commandId: req.params.commandId, 
-            body: req.body 
+        logger.error('Error recording command result', error, {
+            commandId: req.params.commandId,
+            body: req.body
         });
         res.status(500).json({
             success: false,
@@ -153,7 +153,7 @@ app.get('/api/status', (req, res) => {
             historyLength: commandHistory.length,
             uptime: process.uptime()
         };
-        
+
         logger.info('Status check requested', statusData);
         res.json(statusData);
     } catch (error) {
@@ -244,7 +244,7 @@ app.use((err, req, res, next) => {
         body: req.body,
         headers: req.headers
     });
-    
+
     res.status(500).json({
         success: false,
         error: 'Internal server error'
@@ -260,7 +260,7 @@ app.listen(PORT, () => {
         history: `http://localhost:${PORT}/api/commands/history`,
         logs: 'Check logs/ directory for detailed activity logs'
     });
-    
+
     console.log('🚀 Reddit Helper API Server running on http://localhost:${PORT}');
     console.log('📖 API Documentation: http://localhost:${PORT}/api/commands');
     console.log('📊 Server Status: http://localhost:${PORT}/api/status');
