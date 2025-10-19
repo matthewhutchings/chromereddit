@@ -56,62 +56,113 @@ function performSearch(query) {
 
     console.log('Found search input:', searchInput);
 
-    // Focus the input first
-    searchInput.focus();
-
-    // Clear existing value
-    searchInput.value = '';
-
-    // Start typing character by character
-    typeCharacterByCharacter(searchInput, query);
+    // Click on the search input to activate it
+    clickElement(searchInput);
+    
+    // Start typing character by character after a brief delay
+    setTimeout(() => {
+        typeCharacterByCharacter(searchInput, query);
+    }, 200);
 
     return true;
+}
+
+// Function to simulate clicking an element
+function clickElement(element) {
+    console.log('Clicking search input...');
+    
+    // Create mouse events
+    const mouseEvents = [
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+        new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
+        new MouseEvent('click', { bubbles: true, cancelable: true })
+    ];
+    
+    // Dispatch the mouse events
+    mouseEvents.forEach(event => {
+        element.dispatchEvent(event);
+    });
+    
+    // Also focus the element
+    element.focus();
 }
 
 // Function to type characters one by one with human-like delays
 async function typeCharacterByCharacter(inputElement, text) {
     console.log('Starting to type:', text);
-
+    
     // Clear any existing value
     inputElement.value = '';
-
-    // Focus the input
-    inputElement.focus();
-    inputElement.dispatchEvent(new Event('focus', { bubbles: true }));
-
-    // Type each character with a delay
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    // Type each character with realistic keyboard events
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
-
-        // Add the character to the input
+        const charCode = char.charCodeAt(0);
+        const keyCode = char.toUpperCase().charCodeAt(0);
+        
+        // Create keyboard events for this character
+        const keydownEvent = new KeyboardEvent('keydown', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        });
+        
+        const keypressEvent = new KeyboardEvent('keypress', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: charCode,
+            which: charCode,
+            bubbles: true,
+            cancelable: true
+        });
+        
+        const keyupEvent = new KeyboardEvent('keyup', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        });
+        
+        // Dispatch the keyboard events
+        inputElement.dispatchEvent(keydownEvent);
+        inputElement.dispatchEvent(keypressEvent);
+        
+        // Add the character to the input value
         inputElement.value += char;
-
-        // Trigger input events for each character
+        
+        // Trigger input event
         const inputEvent = new Event('input', { bubbles: true, cancelable: true });
         inputElement.dispatchEvent(inputEvent);
-
-        // Random delay between 50-150ms per character to simulate human typing
-        const delay = Math.random() * 100 + 50;
+        
+        // Dispatch keyup
+        inputElement.dispatchEvent(keyupEvent);
+        
+        // Random delay between 80-200ms per character to simulate human typing
+        const delay = Math.random() * 120 + 80;
         await new Promise(resolve => setTimeout(resolve, delay));
-
+        
         console.log(`Typed character: "${char}" (${i + 1}/${text.length})`);
     }
-
+    
     // Trigger change event after all characters are typed
     const changeEvent = new Event('change', { bubbles: true, cancelable: true });
     inputElement.dispatchEvent(changeEvent);
-
+    
     // Wait a moment after finishing typing before submitting
-    const finalDelay = Math.random() * 500 + 300; // 300-800ms delay
+    const finalDelay = Math.random() * 700 + 500; // 500-1200ms delay
     console.log(`Waiting ${Math.round(finalDelay)}ms before submitting...`);
-
+    
     setTimeout(() => {
         console.log('Submitting search...');
         submitSearch(inputElement);
     }, finalDelay);
-}
-
-// Function to submit the search
+}// Function to submit the search
 function submitSearch(inputElement) {
     // Create and dispatch Enter key events
     const keydownEvent = new KeyboardEvent('keydown', {
