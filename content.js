@@ -2,87 +2,371 @@
 
 console.log('Reddit Helper content script loaded');
 
-// Function to find the search input element
+// Function to find the search input element in shadow DOM
 function findSearchInput() {
-    // First try the exact selector from the provided HTML
-    const exactSelector = 'input[type="text"][enterkeyhint="search"][name="q"][maxlength="128"][placeholder="Find anything"]';
-    let element = document.querySelector(exactSelector);
-    if (element) {
-        console.log('Found search input with exact selector');
-        return element;
+    console.log('🔍 Looking for search input...');
+
+    // Look for the faceplate-search-input custom element
+    const faceplateSearch = document.querySelector('faceplate-search-input');
+    if (faceplateSearch) {
+        console.log('✅ Found faceplate-search-input element:', faceplateSearch);
+
+        // Check if it has shadow root
+        if (faceplateSearch.shadowRoot) {
+            console.log('🌟 Shadow root found, looking inside...');
+
+            // Look for input inside shadow root
+            const shadowInput = faceplateSearch.shadowRoot.querySelector('input');
+            if (shadowInput) {
+                console.log('✅ Found input in shadow DOM:', shadowInput);
+                return { element: faceplateSearch, input: shadowInput };
+            }
+        }
+
+        // If no shadow root, try to access the input directly
+        console.log('⚠️ No shadow root found, trying direct access...');
+        return { element: faceplateSearch, input: faceplateSearch };
     }
 
-    // Try more specific selectors based on the provided HTML structure
-    const selectors = [
-        'input[name="q"][enterkeyhint="search"]',
-        'input[name="q"][placeholder="Find anything"]',
+    // Fallback to regular input search
+    const regularInputs = [
         'input[name="q"]',
-        'faceplate-search-input input[type="text"]',
-        'input[placeholder="Find anything"]'
+        'input[placeholder*="Search"]',
+        'input[type="search"]',
+        '#search-input'
     ];
 
-    for (const selector of selectors) {
-        element = document.querySelector(selector);
+    for (const selector of regularInputs) {
+        const element = document.querySelector(selector);
         if (element) {
-            console.log('Found search input with selector:', selector);
-            return element;
+            console.log('✅ Found regular search input with selector:', selector);
+            return { element: element, input: element };
         }
     }
 
-    console.log('Search input not found, trying shadow DOM...');
-
-    // Try to find in shadow DOM (Reddit uses shadow DOM for some elements)
-    const faceplateSearch = document.querySelector('faceplate-search-input');
-    if (faceplateSearch && faceplateSearch.shadowRoot) {
-        const shadowInput = faceplateSearch.shadowRoot.querySelector('input[type="text"]');
-        if (shadowInput) {
-            console.log('Found search input in shadow DOM');
-            return shadowInput;
-        }
-    }
-
+    console.log('❌ No search input found');
     return null;
 }
 
-// Function to perform search with human-like typing
+// Function to perform search with shadow DOM support
 function performSearch(query) {
-    console.log('Attempting to search for:', query);
+    console.log('🚀 Attempting to search for:', query);
 
-    const searchInput = findSearchInput();
-    if (!searchInput) {
-        console.error('Could not find search input');
+    const searchResult = findSearchInput();
+    if (!searchResult) {
+        console.error('❌ Could not find search input');
         return false;
     }
 
-    console.log('Found search input:', searchInput);
+    console.log('✅ Found search components:', searchResult);
 
-    // Click on the search input to activate it
-    clickElement(searchInput);
-    
-    // Start typing character by character after a brief delay
-    setTimeout(() => {
-        typeCharacterByCharacter(searchInput, query);
-    }, 200);
+    // Use the shadow DOM approach
+    searchWithShadowDOM(searchResult.element, searchResult.input, query);
 
     return true;
 }
 
-// Function to simulate clicking an element
+// Function to interact with shadow DOM search input
+async function searchWithShadowDOM(faceplateElement, inputElement, query) {
+    console.log('🌟 Starting shadow DOM search interaction...');
+
+    // First, click on the faceplate-search-input to activate it
+    console.log('🖱️ Clicking on faceplate-search-input...');
+    faceplateElement.click();
+    faceplateElement.focus();
+
+    // Wait a moment for the element to become active
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Try to focus the actual input inside shadow DOM
+    if (inputElement && inputElement !== faceplateElement) {
+        console.log('🎯 Focusing on shadow DOM input...');
+        inputElement.focus();
+        inputElement.click();
+    }
+
+    // Wait another moment
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    console.log('⌨️ Starting to type query...');
+
+    // Type the query character by character
+    await typeInShadowInput(faceplateElement, inputElement, query);
+}
+
+// Function to type in shadow DOM input
+async function typeInShadowInput(faceplateElement, inputElement, text) {
+    console.log('🔤 Starting to type:', text);
+
+    // Clear any existing value
+    if (inputElement && inputElement.value !== undefined) {
+        inputElement.value = '';
+    }
+
+    // Dispatch focus event
+    const focusEvent = new Event('focus', { bubbles: true });
+    if (inputElement && inputElement.dispatchEvent) {
+        inputElement.dispatchEvent(focusEvent);
+    }
+    faceplateElement.dispatchEvent(focusEvent);
+
+    // Type each character
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        console.log(`⌨️ Typing character: "${char}" (${i + 1}/${text.length})`);
+
+        // Create keyboard events
+        const keyboardEvents = createKeyboardEventsForChar(char);
+
+        // Dispatch events on both elements
+        for (const event of keyboardEvents) {
+            if (inputElement && inputElement.dispatchEvent) {
+                inputElement.dispatchEvent(event.cloneNode ? event.cloneNode() : new event.constructor(event.type, event));
+            }
+            faceplateElement.dispatchEvent(event);
+        }
+
+        // Update the input value
+        if (inputElement && inputElement.value !== undefined) {
+            inputElement.value += char;
+        }
+
+        // Dispatch input event
+        const inputEvent = new Event('input', { bubbles: true });
+        if (inputElement && inputElement.dispatchEvent) {
+            inputElement.dispatchEvent(inputEvent);
+        }
+        faceplateElement.dispatchEvent(inputEvent);
+
+        // Human-like delay
+        const delay = Math.random() * 120 + 80;
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    // Dispatch change event
+    const changeEvent = new Event('change', { bubbles: true });
+    if (inputElement && inputElement.dispatchEvent) {
+        inputElement.dispatchEvent(changeEvent);
+    }
+    faceplateElement.dispatchEvent(changeEvent);
+
+    // Wait before submitting
+    const finalDelay = Math.random() * 700 + 500;
+    console.log(`⏳ Waiting ${Math.round(finalDelay)}ms before submitting...`);
+
+    setTimeout(() => {
+        console.log('🚀 Submitting search...');
+        submitShadowSearch(faceplateElement, inputElement);
+    }, finalDelay);
+}
+
+// Function to create keyboard events for a character
+function createKeyboardEventsForChar(char) {
+    const charCode = char.charCodeAt(0);
+    const keyCode = char.toUpperCase().charCodeAt(0);
+
+    return [
+        new KeyboardEvent('keydown', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        }),
+        new KeyboardEvent('keypress', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: charCode,
+            which: charCode,
+            bubbles: true,
+            cancelable: true
+        }),
+        new KeyboardEvent('keyup', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            bubbles: true,
+            cancelable: true
+        })
+    ];
+}
+
+// Function to submit search in shadow DOM
+function submitShadowSearch(faceplateElement, inputElement) {
+    console.log('🎯 Submitting shadow DOM search...');
+
+    // Create Enter key events
+    const enterEvents = [
+        new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true
+        }),
+        new KeyboardEvent('keypress', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true
+        }),
+        new KeyboardEvent('keyup', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true
+        })
+    ];
+
+    // Dispatch Enter events on both elements
+    for (const event of enterEvents) {
+        if (inputElement && inputElement.dispatchEvent) {
+            inputElement.dispatchEvent(event.cloneNode ? event.cloneNode() : new event.constructor(event.type, event));
+        }
+        faceplateElement.dispatchEvent(event);
+    }
+
+    // Try form submission as backup
+    const form = faceplateElement.closest('form');
+    if (form) {
+        console.log('📝 Found form, submitting...');
+        form.submit();
+    }
+
+    console.log('✅ Search submission complete');
+}
+
+// OLD TAB NAVIGATION FUNCTIONS (Commented out - now using shadow DOM approach)
+/*
+// Function to navigate to search box using Tab key and then type
+async function navigateToSearchWithTabs(query) {
+    console.log('🔍 Starting Tab navigation to search box...');
+    console.log('📋 Current active element before starting:', document.activeElement);
+
+    // Focus on the document body first to start tabbing from the beginning
+    document.body.focus();
+    console.log('📌 Focused on document body');
+
+    // Get all focusable elements for debugging
+    const focusableElements = getFocusableElements();
+    console.log('🎯 Found', focusableElements.length, 'focusable elements');
+
+    // Press Tab 3 times to get to the search box
+    for (let i = 1; i <= 3; i++) {
+        console.log(`\n⌨️  Pressing Tab ${i}/3...`);
+        console.log('📍 Current active element before Tab:', document.activeElement.tagName, document.activeElement.className || 'no-class');
+
+        // Create multiple Tab key events for better compatibility
+        const tabKeydownEvent = new KeyboardEvent('keydown', {
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            which: 9,
+            bubbles: true,
+            cancelable: true
+        });
+
+        const tabKeypressEvent = new KeyboardEvent('keypress', {
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            which: 9,
+            bubbles: true,
+            cancelable: true
+        });
+
+        const tabKeyupEvent = new KeyboardEvent('keyup', {
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            which: 9,
+            bubbles: true,
+            cancelable: true
+        });
+
+        // Dispatch all Tab events
+        console.log('🚀 Dispatching Tab keydown event...');
+        const keydownResult = document.activeElement.dispatchEvent(tabKeydownEvent);
+        console.log('📤 Tab keydown dispatched, result:', keydownResult);
+
+        console.log('🚀 Dispatching Tab keypress event...');
+        const keypressResult = document.activeElement.dispatchEvent(tabKeypressEvent);
+        console.log('📤 Tab keypress dispatched, result:', keypressResult);
+
+        console.log('🚀 Dispatching Tab keyup event...');
+        const keyupResult = document.activeElement.dispatchEvent(tabKeyupEvent);
+        console.log('📤 Tab keyup dispatched, result:', keyupResult);
+
+        // Manually simulate tab behavior by moving focus
+        const currentIndex = focusableElements.indexOf(document.activeElement);
+        console.log('📊 Current element index in focusable list:', currentIndex);
+
+        if (currentIndex >= 0 && currentIndex < focusableElements.length - 1) {
+            const nextElement = focusableElements[currentIndex + 1];
+            console.log('➡️  Moving focus to next element:', nextElement.tagName, nextElement.className || 'no-class');
+            nextElement.focus();
+            console.log('✅ Focus moved to:', document.activeElement.tagName, document.activeElement.className || 'no-class');
+        } else {
+            console.log('⚠️  Could not find next focusable element');
+        }
+
+        // Wait between tab presses
+        console.log('⏳ Waiting 200ms before next Tab...');
+        await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    console.log('\n🎯 Tab navigation complete!');
+    console.log('📍 Final active element:', document.activeElement.tagName, document.activeElement.className || 'no-class');
+    console.log('🔤 Is it an input?', document.activeElement.tagName === 'INPUT');
+    console.log('🔍 Input type:', document.activeElement.type || 'not-an-input');
+    console.log('📝 Placeholder:', document.activeElement.placeholder || 'no-placeholder');
+
+    console.log('⌨️  Starting to type query...');
+
+    // Now type the query character by character
+    await typeCharacterByCharacter(document.activeElement, query);
+}
+
+// Function to get all focusable elements on the page
+function getFocusableElements() {
+    const focusableSelectors = [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])'
+    ];
+
+    return Array.from(document.querySelectorAll(focusableSelectors.join(', ')))
+        .filter(element => {
+            return element.offsetWidth > 0 &&
+                   element.offsetHeight > 0 &&
+                   !element.hidden;
+        });
+}// Function to simulate clicking an element
 function clickElement(element) {
     console.log('Clicking search input...');
-    
+
     // Create mouse events
     const mouseEvents = [
         new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
         new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
         new MouseEvent('click', { bubbles: true, cancelable: true })
     ];
-    
+
     // Dispatch the mouse events
     mouseEvents.forEach(event => {
         element.dispatchEvent(event);
     });
-    
+
     // Also focus the element
     element.focus();
 }
@@ -90,17 +374,17 @@ function clickElement(element) {
 // Function to type characters one by one with human-like delays
 async function typeCharacterByCharacter(inputElement, text) {
     console.log('Starting to type:', text);
-    
+
     // Clear any existing value
     inputElement.value = '';
     inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-    
+
     // Type each character with realistic keyboard events
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
         const charCode = char.charCodeAt(0);
         const keyCode = char.toUpperCase().charCodeAt(0);
-        
+
         // Create keyboard events for this character
         const keydownEvent = new KeyboardEvent('keydown', {
             key: char,
@@ -110,7 +394,7 @@ async function typeCharacterByCharacter(inputElement, text) {
             bubbles: true,
             cancelable: true
         });
-        
+
         const keypressEvent = new KeyboardEvent('keypress', {
             key: char,
             code: `Key${char.toUpperCase()}`,
@@ -119,7 +403,7 @@ async function typeCharacterByCharacter(inputElement, text) {
             bubbles: true,
             cancelable: true
         });
-        
+
         const keyupEvent = new KeyboardEvent('keyup', {
             key: char,
             code: `Key${char.toUpperCase()}`,
@@ -128,43 +412,47 @@ async function typeCharacterByCharacter(inputElement, text) {
             bubbles: true,
             cancelable: true
         });
-        
+
         // Dispatch the keyboard events
         inputElement.dispatchEvent(keydownEvent);
         inputElement.dispatchEvent(keypressEvent);
-        
+
         // Add the character to the input value
         inputElement.value += char;
-        
+
         // Trigger input event
         const inputEvent = new Event('input', { bubbles: true, cancelable: true });
         inputElement.dispatchEvent(inputEvent);
-        
+
         // Dispatch keyup
         inputElement.dispatchEvent(keyupEvent);
-        
+
         // Random delay between 80-200ms per character to simulate human typing
         const delay = Math.random() * 120 + 80;
         await new Promise(resolve => setTimeout(resolve, delay));
-        
+
         console.log(`Typed character: "${char}" (${i + 1}/${text.length})`);
     }
-    
+
     // Trigger change event after all characters are typed
     const changeEvent = new Event('change', { bubbles: true, cancelable: true });
     inputElement.dispatchEvent(changeEvent);
-    
+
     // Wait a moment after finishing typing before submitting
     const finalDelay = Math.random() * 700 + 500; // 500-1200ms delay
     console.log(`Waiting ${Math.round(finalDelay)}ms before submitting...`);
-    
+
     setTimeout(() => {
         console.log('Submitting search...');
         submitSearch(inputElement);
     }, finalDelay);
-}// Function to submit the search
+}
+
+// Function to submit the search
 function submitSearch(inputElement) {
-    // Create and dispatch Enter key events
+    console.log('Submitting search by pressing Enter...');
+
+    // Just press Enter - no need to click since we're already focused from Tab navigation
     const keydownEvent = new KeyboardEvent('keydown', {
         key: 'Enter',
         code: 'Enter',
@@ -192,7 +480,7 @@ function submitSearch(inputElement) {
         cancelable: true
     });
 
-    // Dispatch keyboard events
+    // Dispatch keyboard events in sequence
     inputElement.dispatchEvent(keydownEvent);
     inputElement.dispatchEvent(keypressEvent);
     inputElement.dispatchEvent(keyupEvent);
@@ -206,6 +494,8 @@ function submitSearch(inputElement) {
 
     console.log('Search submitted successfully');
 }
+*/
+// END OF COMMENTED OLD FUNCTIONS
 
 // Smooth scrolling functions
 function smoothScrollDown() {
@@ -1483,3 +1773,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Return true to indicate we'll send a response asynchronously (even though we send it immediately)
     return true;
 });
+
+// Global Tab key monitor for debugging
+console.log('🔧 Setting up global Tab key monitor...');
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab' || event.keyCode === 9) {
+        console.log('\n🔍 TAB KEY DETECTED!');
+        console.log('📍 Current active element:', event.target.tagName, event.target.className || 'no-class');
+        console.log('🎯 Event target:', event.target);
+        console.log('📋 Document active element:', document.activeElement.tagName, document.activeElement.className || 'no-class');
+        console.log('⌨️  Event details:', {
+            key: event.key,
+            code: event.code,
+            keyCode: event.keyCode,
+            bubbles: event.bubbles,
+            cancelable: event.cancelable,
+            defaultPrevented: event.defaultPrevented
+        });
+
+        // Show next focusable element if available
+        const focusableElements = getFocusableElements();
+        const currentIndex = focusableElements.indexOf(document.activeElement);
+        if (currentIndex >= 0 && currentIndex < focusableElements.length - 1) {
+            const nextElement = focusableElements[currentIndex + 1];
+            console.log('➡️  Next focusable element would be:', nextElement.tagName, nextElement.className || 'no-class', nextElement.placeholder || 'no-placeholder');
+        } else {
+            console.log('⚠️  No next focusable element found');
+        }
+        console.log('────────────────────────');
+    }
+}, true); // Use capture phase to catch all Tab events
+
+console.log('✅ Tab key monitor active - will log all Tab presses');
